@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.hataibu.build</groupId>
+	<artifactId>build-base</artifactId>
+	<version>1.0.0</version>
+	
+	<name>Base</name>
+	<description>Base for all POMs</description>
+
+	<packaging>pom</packaging>
+
+	<properties>
+		<!-- default encoding of source/text files, currently same as CVS -->
+		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+		<!-- 'default' scm location -->
+		<my.scm.connection>scm:cvs:pserver:cvshost:/home/projekte:${project.groupId}/${project.artifactId}</my.scm.connection>
+		<!-- 'developer' scm location -->
+		<my.scm.developerConnection>scm:cvs:pserver:cvshost:/home/projekte:${project.groupId}/${project.artifactId}</my.scm.developerConnection>
+		<!-- source code compliance level the compiler should assume -->
+		<my.compiler.version.source>1.8</my.compiler.version.source>
+		<!-- class file compliance level the compiler should produce -->
+		<my.compiler.version.target>1.8</my.compiler.version.target>
+		<!-- whether code analyser plug-ins fail the build on errors and violations, 
+			default is 'false' so automated builds don't break, see 'dev' profile -->
+		<my.code-analysis.fail>false</my.code-analysis.fail>
+		<!-- skip execution of code analysers -->
+		<!-- <my.code-analysis.skip>false</my.code-analysis.skip> -->
+		<!-- skip creation of source jars -->
+		<!-- <my.source.skip>false</my.source.skip> -->
+		<!-- skip execution of unit tests -->
+		<!-- <my.unit-tests.skip>false</my.unit-tests.skip> -->
+		<!-- skip execution of integration tests -->
+		<!-- <my.integration-tests.skip>false</my.integration-tests.skip> -->
+	</properties>
+	<prerequisites>
+		<maven>3.0.1</maven>
+	</prerequisites>
+	<scm>
+		<connection>${my.scm.connection}</connection>
+		<developerConnection>${my.scm.developerConnection}</developerConnection>
+	</scm>
+	<organization>
+		<name>hataibu.com</name>
+		<url>http://www.hataibu.com</url>
+	</organization>
+	<issueManagement>
+		<url>https://github.com/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
+	<distributionManagement>
+		<repository>
+			<name>iPoint Releases</name>
+			<id>ipoint-releases</id>
+			<url>http://ipsvmsnexus.rt.ipnt.de/nexus/content/repositories/ipoint-releases</url>
+		</repository>
+		<snapshotRepository>
+			<name>iPoint Snapshots</name>
+			<id>ipoint-snapshots</id>
+			<url>http://ipsvmsnexus.rt.ipnt.de/nexus/content/repositories/ipoint-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<repositories>
+		<repository>
+			<id>nexus</id>
+			<name>iPoint Nexus</name>
+			<url>http://ipsvmsnexus.rt.ipnt.de/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- unit tests are enabled by default -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+			<!-- integration tests are enabled by default -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!-- clean -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.5</version>
+					<configuration>
+						<followSymLinks>true</followSymLinks>
+					</configuration>
+				</plugin>
+				<!-- internal compiler -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>${my.compiler.version.source}</source>
+						<target>${my.compiler.version.target}</target>
+					</configuration>
+				</plugin>
+				<!-- resource build -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<!-- unit test execution -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.17</version>
+					<configuration>
+						<skipTests>${my.unit-tests.skip}</skipTests>
+						<testFailureIgnore>${maven.test.failure.ignore}</testFailureIgnore>
+						<excludes>
+							<!-- exclude all test classes with suffix 'Local' -->
+							<exclude>**/*Local.java</exclude>
+							<!-- exclude integration tests -->
+							<exclude>**/*IntegrationTest.java</exclude>
+						</excludes>
+						<redirectTestOutputToFile>true</redirectTestOutputToFile>
+					</configuration>
+				</plugin>
+				<!-- integration test execution -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.17</version>
+					<configuration>
+						<skipTests>${my.integration-tests.skip}</skipTests>
+						<testFailureIgnore>${maven.test.failure.ignore}</testFailureIgnore>
+						<includes>
+							<include>**/*IntegrationTest.java</include>
+						</includes>
+						<redirectTestOutputToFile>true</redirectTestOutputToFile>
+					</configuration>
+				</plugin>
+				<!-- generic artifact packaging -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.4.1</version>
+				</plugin>
+				<!-- source artifact packaging -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.3</version>
+					<configuration>
+						<includePom>true</includePom>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<!-- jar artifact packaging -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.5</version>
+					<configuration>
+						<archive>
+							<addMavenDescriptor>false</addMavenDescriptor>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Build-Jdk-Vendor>${java.vendor}</Build-Jdk-Vendor>
+								<Permissions>all-permissions</Permissions>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
+				<!-- war artifact packaging -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.4</version>
+					<configuration>
+						<archive>
+							<addMavenDescriptor>false</addMavenDescriptor>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Build-Jdk-Vendor>${java.vendor}</Build-Jdk-Vendor>
+								<Permissions>all-permissions</Permissions>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
+				<!-- ear artifact packaging -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-ear-plugin</artifactId>
+					<version>2.9.1</version>
+					<configuration>
+						<archive>
+							<addMavenDescriptor>false</addMavenDescriptor>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Build-Jdk-Vendor>${java.vendor}</Build-Jdk-Vendor>
+								<Permissions>all-permissions</Permissions>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
+				<!-- build environment enforcer -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.3.1</version>
+				</plugin>
+				<!-- artifact deployment to remote repository (ie: nexus) -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.8.1</version>
+					<configuration>
+						<deployAtEnd>true</deployAtEnd>
+					</configuration>
+				</plugin>
+				<!-- artifact installation to local repository -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.5.1</version>
+					<configuration>
+						<installAtEnd>true</installAtEnd>
+					</configuration>
+				</plugin>
+				<!-- artifact signing -->
+<!-- 				<plugin> -->
+<!-- 					<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 					<artifactId>maven-jarsigner-plugin</artifactId> -->
+<!-- 					<version>1.3.2</version> -->
+<!-- 					<inherited>true</inherited> -->
+<!-- 					<configuration> -->
+<!-- 						<keystore></keystore> -->
+<!-- 						<storepass></storepass> -->
+<!-- 						<alias></alias> -->
+<!-- 						<removeExistingSignatures>true</removeExistingSignatures> -->
+<!-- 					</configuration> -->
+<!-- 				</plugin> -->
+				<!-- pom versions checking and manipulation -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<version>2.1</version>
+				</plugin>
+				<!-- ant execution -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
+				<!-- binary artifact attachments -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.9</version>
+				</plugin>
+				<!-- static jasper report compilation -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jasperreports-maven-plugin</artifactId>
+					<version>1.0-beta-2</version>
+					<configuration>
+						<!-- Use the JDT compiler because the default JRJavacCompiler uses 
+							javac of the JRE/JDK with which the build was started -->
+						<compiler>net.sf.jasperreports.engine.design.JRJdtCompiler</compiler>
+					</configuration>
+					<dependencies>
+						<!-- force the correct versions of plugin dependencies -->
+						<dependency>
+							<groupId>net.sf.jasperreports</groupId>
+							<artifactId>jasperreports</artifactId>
+							<version>4.7.0</version>
+						</dependency>
+						<dependency>
+							<groupId>eclipse</groupId>
+							<artifactId>jdtcore</artifactId>
+							<version>3.1.0</version>
+						</dependency>
+						<dependency>
+							<groupId>log4j</groupId>
+							<artifactId>log4j</artifactId>
+							<version>1.2.17</version>
+							<exclusions>
+								<exclusion>
+									<groupId>com.sun.jdmk</groupId>
+									<artifactId>jmxtools</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>com.sun.jmx</groupId>
+									<artifactId>jmxri</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>javax.jms</groupId>
+									<artifactId>jms</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>javax.mail</groupId>
+									<artifactId>mail</artifactId>
+								</exclusion>
+							</exclusions>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<!-- PMD code analyzer -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-pmd-plugin</artifactId>
+					<version>3.2</version>
+					<configuration>
+						<minimumPriority>2</minimumPriority>
+						<failOnViolation>${my.code-analysis.fail}</failOnViolation>
+						<source>${my.compiler.version.source}</source>
+						<targetJdk>${my.compiler.version.target}</targetJdk>
+						<excludeRoots>
+							<excludeRoot>${project.build.directory}</excludeRoot>
+						</excludeRoots>
+						<skip>${my.code-analysis.skip}</skip>
+					</configuration>
+				</plugin>
+				<!-- Checkstyle code analyzer -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>2.12.1</version>
+					<configuration>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<failOnViolation>${my.code-analysis.fail}</failOnViolation>
+						<failsOnError>${my.code-analysis.fail}</failsOnError>
+						<violationSeverity>warning</violationSeverity>
+						<logViolationsToConsole>true</logViolationsToConsole>
+						<module name="SuppressionFilter">
+							<property name="file"
+								value="${basedir}/src/build/resources/checkstyle-suppressions.xml" />
+						</module>
+						<skip>${my.code-analysis.skip}</skip>
+					</configuration>
+				</plugin>
+				<!-- Findbugs code analyzer -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>findbugs-maven-plugin</artifactId>
+					<version>3.0.0</version>
+					<configuration>
+						<effort>Max</effort>
+						<threshold>Default</threshold>
+						<failOnError>${my.code-analysis.fail}</failOnError>
+						<xmlOutput>true</xmlOutput>
+						<skip>${my.code-analysis.skip}</skip>
+					</configuration>
+				</plugin>
+				<!-- fixate versions of plugins used in report -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-report-plugin</artifactId>
+					<version>2.17</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.4</version>
+				<configuration>
+					<locales>de,en</locales>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>taglist-maven-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<tagListOptions>
+						<matchString>TODO</matchString>
+						<matchType>exact</matchType>
+						<matchString>FIXME</matchString>
+						<matchType>exact</matchType>
+						<matchString>XXX</matchString>
+						<matchType>exact</matchType>
+					</tagListOptions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.12.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+					<defaultAuthor>hataibu</defaultAuthor>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.6</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.4</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.17</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-report-plugin</artifactId>
+				<version>2.17</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>1.2</version>
+			</plugin>
+			<!-- PMD code analyzer -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.2</version>
+				<configuration>
+					<minimumPriority>2</minimumPriority>
+					<failOnViolation>${my.code-analysis.fail}</failOnViolation>
+					<source>${my.compiler.version.source}</source>
+					<targetJdk>${my.compiler.version.target}</targetJdk>
+					<excludeRoots>
+						<excludeRoot>${project.build.directory}</excludeRoot>
+					</excludeRoots>
+					<skip>${my.code-analysis.skip}</skip>
+				</configuration>
+			</plugin>
+			<!-- Checkstyle code analyzer -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.12.1</version>
+				<configuration>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<failOnViolation>${my.code-analysis.fail}</failOnViolation>
+					<failsOnError>${my.code-analysis.fail}</failsOnError>
+					<violationSeverity>warning</violationSeverity>
+					<logViolationsToConsole>true</logViolationsToConsole>
+					<module name="SuppressionFilter">
+						<property name="file"
+							value="${basedir}/src/build/resources/checkstyle-suppressions.xml" />
+					</module>
+					<skip>${my.code-analysis.skip}</skip>
+				</configuration>
+			</plugin>
+			<!-- Findbugs code analyzer -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>Default</threshold>
+					<failOnError>${my.code-analysis.fail}</failOnError>
+					<xmlOutput>true</xmlOutput>
+					<skip>${my.code-analysis.skip}</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+	<profiles>
+		<profile>
+			<!-- profile for using external java compiler -->
+			<id>external-java-compiler</id>
+			<activation>
+				<file>
+					<exists>${EXTERNAL_JAVA}</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<!-- enforce the needed additional properties are set -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<configuration>
+							<rules>
+								<requireProperty>
+									<property>EXTERNAL_JAVA_VERSION</property>
+									<message>External Java Version (EXTERNAL_JAVA_VERSION) must be
+										set</message>
+								</requireProperty>
+								<requireProperty>
+									<property>EXTERNAL_JAVA_VENDOR</property>
+									<message>External Java Vendor (EXTERNAL_JAVA_VENDOR) must be
+										set</message>
+								</requireProperty>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+						<executions>
+							<execution>
+								<id>enforce-property</id>
+								<goals>
+									<goal>enforce</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<fork>true</fork>
+							<executable>${EXTERNAL_JAVA}${file.separator}bin${file.separator}javac</executable>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<configuration>
+							<excludes>
+								<!-- exclude temporary files created when javac was forked -->
+								<exclude>javac.*</exclude>
+								<exclude>org.codehaus.plexus.compiler.javac.JavacCompiler*arguments</exclude>
+							</excludes>
+							<archive>
+								<addMavenDescriptor>false</addMavenDescriptor>
+								<manifest>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								</manifest>
+								<manifestEntries>
+									<Build-Jdk>${EXTERNAL_JAVA_VERSION}</Build-Jdk>
+									<Build-Jdk-Vendor>${EXTERNAL_JAVA_VENDOR}</Build-Jdk-Vendor>
+									<Permissions>all-permissions</Permissions>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<!-- exclude temporary files created when javac was forked -->
+							<packagingExcludes>javac.*,org.codehaus.plexus.compiler.javac.JavacCompiler*arguments</packagingExcludes>
+							<archive>
+								<addMavenDescriptor>false</addMavenDescriptor>
+								<manifest>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								</manifest>
+								<manifestEntries>
+									<Build-Jdk>${EXTERNAL_JAVA_VERSION}</Build-Jdk>
+									<Build-Jdk-Vendor>${EXTERNAL_JAVA_VENDOR}</Build-Jdk-Vendor>
+									<Permissions>all-permissions</Permissions>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-ear-plugin</artifactId>
+						<configuration>
+							<!-- exclude temporary files created when javac was forked -->
+							<packagingExcludes>javac.*,org.codehaus.plexus.compiler.javac.JavacCompiler*arguments</packagingExcludes>
+							<archive>
+								<addMavenDescriptor>false</addMavenDescriptor>
+								<manifest>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								</manifest>
+								<manifestEntries>
+									<Build-Jdk>${EXTERNAL_JAVA_VERSION}</Build-Jdk>
+									<Build-Jdk-Vendor>${EXTERNAL_JAVA_VENDOR}</Build-Jdk-Vendor>
+									<Permissions>all-permissions</Permissions>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+			<reporting>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<configuration>
+							<javadocExecutable>${EXTERNAL_JAVA}${file.separator}bin${file.separator}javadoc</javadocExecutable>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>versions-maven-plugin</artifactId>
+						<reportSets>
+							<reportSet>
+								<reports>
+									<report>dependency-updates-report</report>
+									<report>plugin-updates-report</report>
+									<report>property-updates-report</report>
+								</reports>
+							</reportSet>
+						</reportSets>
+					</plugin>
+				</plugins>
+			</reporting>
+		</profile>
+		<profile>
+			<!-- profile to display versions and check for available updates of plugins 
+				and dependencies -->
+			<id>display-updates</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>versions-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>check-plugin-versions</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>display-property-updates</goal>
+									<goal>display-plugin-updates</goal>
+									<goal>display-dependency-updates</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- development build -->
+			<id>dev</id>
+			<properties>
+				<!-- FAIL on code analysis violations -->
+				<my.code-analysis.fail>true</my.code-analysis.fail>
+				<!-- SKIP execution of integration tests -->
+				<my.integration-tests.skip>true</my.integration-tests.skip>
+			</properties>
+			<build>
+				<plugins>
+					<!-- SKIP artifact deployment into remote repository -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- continuous integration build -->
+			<id>ci</id>
+			<!-- stub only -->
+		</profile>
+		<profile>
+			<!-- release candidate build -->
+			<id>rc</id>
+			<distributionManagement>
+				<repository>
+					<name>iPoint Staging</name>
+					<id>ipoint-staging</id>
+					<url>http://ipsvmsnexus.rt.ipnt.de/nexus/content/repositories/ipoint-staging</url>
+				</repository>
+				<snapshotRepository>
+					<name>iPoint Snapshots</name>
+					<id>ipoint-snapshots</id>
+					<url>http://ipsvmsnexus.rt.ipnt.de/nexus/content/repositories/ipoint-snapshots</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+		<profile>
+			<!-- release build -->
+			<id>release</id>
+			<!-- stub only -->
+		</profile>
+		<profile>
+			<id>ecj</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<compilerId>eclipse</compilerId>
+						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>org.codehaus.plexus</groupId>
+								<artifactId>plexus-compiler-eclipse</artifactId>
+								<version>2.3</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+					<!-- SKIP artifact deployment into remote repository -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- adds a 'Git-Commit' entry to manifests if GIT_COMMIT is set in environment -->
+			<id>GitCommitManifestEnv</id>
+			<activation>
+				<property>
+					<name>env.GIT_COMMIT</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-ear-plugin</artifactId>
+						<configuration>
+							<archive>
+								<manifestEntries>
+									<Git-Commit>${env.GIT_COMMIT}</Git-Commit>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<configuration>
+							<archive>
+								<manifestEntries>
+									<Git-Commit>${env.GIT_COMMIT}</Git-Commit>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<archive>
+								<manifestEntries>
+									<Git-Commit>${env.GIT_COMMIT}</Git-Commit>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+
+</project>
